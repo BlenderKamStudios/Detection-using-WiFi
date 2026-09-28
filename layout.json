@@ -1,0 +1,9 @@
+{
+  "_help": "Board positions in metres, seen from above. x = left/right, y = distance into the room from the sender. Measure where the boards stand and edit the numbers; restart server.py afterwards. Receivers are recognised by MAC, whatever USB port they are on.",
+  "tx": {"name": "TX", "x": 0.0, "y": 0.0},
+  "receivers": [
+    {"name": "RX1", "mac": "8c:94:df:aa:53:84", "x": -2.0, "y": 3.0},
+    {"name": "RX2", "mac": "00:70:07:a3:bd:98", "x": 0.0, "y": 3.5},
+    {"name": "RX3", "mac": "8c:94:df:90:86:e0", "x": 2.0, "y": 3.0}
+  ]
+}
