@@ -1,0 +1,86 @@
+\chapter{Introduction}
+
+\section{Background}
+Wi-Fi was designed to carry data, but the radio signal that carries the data also carries information about the room it passes through. A signal sent by a transmitter does not reach the receiver along one straight line only. It also arrives after bouncing off walls, furniture and people, and the receiver gets the sum of all these copies. This is called multipath propagation. When the room is empty and nothing moves, the paths stay the same and the received signal is almost constant. When a person walks, sits down, falls or even breathes, some of the paths become longer or shorter, the copies add up differently, and the received signal changes over time. Reading these changes makes it possible to sense people without asking them to carry any device, which is why this field is called device-free or passive sensing.
+
+Early device-free systems used the Received Signal Strength (RSS), a single number per packet that describes the overall power of the signal. RSS is easy to obtain on any device, but it is coarse and it varies even in a static room, so slow or small movements are easily hidden in its own noise \cite{fimd,pads}. Modern Wi-Fi uses Orthogonal Frequency Division Multiplexing (OFDM), which splits the channel into many narrow subcarriers. For each received packet, the receiver estimates the amplitude and the phase of every subcarrier. This estimate is the Channel State Information (CSI). Because CSI describes the channel at the level of single subcarriers and not as one total power value, it is stable in a static environment and at the same time sensitive to movement, and it captures small-scale fading patterns that RSS cannot show \cite{fimd,eeyes}.
+
+Since CSI became readable on commodity network cards, a large body of work has grown around it. FIMD \cite{fimd} was one of the first systems to detect motion from CSI. Later work detected people who move at different speeds \cite{pads} and people who do not move at all \cite{deman}, detected people behind a wall \cite{thude,wiborder,alpd,wifileaks}, recognised daily activities \cite{eeyes,carm,carmjsac}, detected falls \cite{wifall,antifall,rtfall,falldefi} and measured breathing and heart rate during sleep \cite{vitalsigns}. More recent work replaces hand-made features with deep learning models and studies how well these models carry over to new rooms and new tasks \cite{sensefi,autofi}. A survey of more than one hundred CSI-based applications groups the field into pattern-based, model-based and deep learning-based approaches \cite{survey2019}.
+
+Almost all of this research was carried out with a small set of hardware: laptop network cards such as the Intel 5300, routers with Atheros chipsets, or smartphones with modified firmware \cite{sensefi,survey2019}. Wi-Fi devices themselves, however, are now found almost everywhere: nearly every home, classroom and office already has an access point and several client devices. This makes ordinary commodity Wi-Fi devices an attractive platform for sensing with resources that students, small organisations and households can afford, but such devices cannot be assumed to offer the several synchronised antennas that most published systems rely on.
+
+\section{Motivation}
+Knowing whether a person is present, whether they move and where they roughly are is the starting point for many useful applications: intrusion alarms, care for elderly people who live alone, emergency response, and automatic control of lighting and air conditioning \cite{alpd,deman}. Falls are a clear example of why this matters. The works on fall detection reviewed in this report point out that about one in three adults aged 65 or older falls each year, and that the outcome of a fall depends strongly on how quickly help arrives \cite{wifall,rtfall}.
+
+The existing ways of sensing people each have a weakness. Cameras give detailed information but raise privacy concerns, need light and a clear line of sight, and become expensive when a whole home must be covered \cite{alpd,antifall}. Passive infrared sensors are cheap and privacy friendly, but they work in small areas and are designed for moving people \cite{alpd}. Wearable sensors are effective, yet people have to remember to wear them, which elderly users often do not, and they cannot be used at all for intrusion detection \cite{falldefi,carmjsac}. Wi-Fi sensing avoids these problems: it needs no light, the person carries nothing, and the signal covers areas that a camera cannot see, including the space behind furniture and walls \cite{carmjsac}.
+
+A second motivation is cost and availability. If presence and movement sensing only works with specific laptop network cards that are no longer sold, it stays in the laboratory. If it works on the ordinary Wi-Fi devices that people already own, it can be deployed in ordinary homes and classrooms. It is not yet clear how much of the performance reported in the literature survives on such ordinary hardware, and answering this question is useful both for people who want to build such systems and for people who want to know what is realistic.
+
+The third motivation is that the same ability can be misused. WiFiLeaks \cite{wifileaks} shows that an attacker standing outside a room with an ordinary smartphone can tell whether a person is inside, even when that person is not moving, by listening to the signals of the Wi-Fi devices in the room. Understanding what ordinary Wi-Fi devices can and cannot sense is therefore also important for judging the privacy risk of the Wi-Fi devices that already surround us.
+
+\section{Problem Statement}
+Research on Wi-Fi sensing has shown impressive results, but several problems stand between these results and a system that can be built from widely available, low-cost parts.
+
+First, the strongest published systems depend on hardware features that ordinary devices cannot be assumed to have. Many of them use two or three receiving antennas that share one oscillator, and build their key signal from the difference between antennas \cite{antifall,rtfall,wiborder,pads,thude}. A device that reports CSI for one antenna only cannot produce this signal, and its raw phase is disturbed by random offsets that such methods are designed to cancel \cite{wiborder}.
+
+Second, sensing performance depends on the environment. A system that is trained in one room loses accuracy when the furniture is moved or when it is used in another room. FallDeFi \cite{falldefi}, which was designed to resist this effect, still falls from above 93\% to close to 80\% accuracy when the environment changes, and later attempts to close the gap with data augmentation report only a slight improvement \cite{adafall}.
+
+Third, a person who does not move is much harder to detect than a person who walks. Motion produces large changes in the signal, while a still person only produces the very small periodic change caused by breathing, which can be hidden by noise or destroyed by other movement \cite{deman}.
+
+Fourth, most systems are built and evaluated for one task only, such as motion detection or fall detection, and each uses its own hardware, data and way of measuring accuracy. This makes it difficult to know what a single low-cost installation can do in total.
+
+The problem addressed in this research can therefore be stated as follows: \emph{to what extent can human presence, movement and the approximate location of movement be detected reliably using only low-cost commodity Wi-Fi devices, and how does this performance hold when it is measured on data that the system has not seen during set-up or training?}
+
+\section{Objectives}
+The aim of this research is to design, build and honestly evaluate a device-free sensing system based on commodity Wi-Fi devices. The specific objectives are:
+\begin{enumerate}
+  \item To study the existing CSI-based systems for presence detection, through-the-wall detection, activity recognition, fall detection and breathing monitoring, and to identify which of their techniques can be used on ordinary commodity hardware.
+  \item To build a data collection platform with one commodity Wi-Fi transmitter and several commodity Wi-Fi receivers that streams CSI to a computer at a steady packet rate and stores it for later analysis.
+  \item To detect whether a room is empty or occupied by a moving person, using signal processing on CSI amplitude with a short calibration in the empty room.
+  \item To extend detection to a person who is present but not walking, by looking for the breathing pattern in the signal, and to report clearly in which conditions this works and in which it does not.
+  \item To estimate the coarse location and the direction of movement by combining several transmitter--receiver links.
+  \item To train lightweight classifiers on labelled recordings for a small set of activities and zones, and to compare them with the threshold-based detector.
+  \item To evaluate every result on recording sessions that were not used for training, and to measure how the performance changes when the room layout or the placement of the devices changes.
+\end{enumerate}
+
+\section{Proposed Solution Overview}
+The proposed system uses four commodity Wi-Fi devices. One device is the transmitter (TX). It sends short packets at a fixed rate of about 100 packets per second. The other three devices are receivers (RX1 to RX3). They are placed at different sides of the room so that the three TX--RX links cross the area of interest. For every packet it receives from the transmitter, each receiver reads the CSI from its Wi-Fi driver and forwards it to a computer. Figure~\ref{fig:overview} shows the flow of data through the system.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  node distance=0.55cm and 0.7cm,
+  box/.style={draw, rounded corners=2pt, align=center, font=\footnotesize, minimum height=0.95cm, text width=2.55cm, inner sep=3pt},
+  wide/.style={box, text width=11.6cm},
+  arr/.style={-{Stealth[length=2mm]}, semithick}]
+  \node[box] (tx) {Wi-Fi transmitter\\(about 100 packets/s)};
+  \node[box, right=1.9cm of tx] (rx) {3 Wi-Fi receivers\\(CSI per packet)};
+  \node[box, right=1.9cm of rx] (pc) {Computer\\(time stamps, logging)};
+  \draw[arr, dashed] (tx) -- node[above, font=\scriptsize]{Wi-Fi} node[below, font=\scriptsize]{multipath} (rx);
+  \draw[arr] (rx) -- node[above, font=\scriptsize]{CSI lines} (pc);
+
+  \node[wide, below=0.9cm of rx] (pre) {Pre-processing: CSI amplitude per subcarrier, removal of unusable subcarriers and outliers, sliding windows};
+  \draw[arr] (pc.south) |- ([yshift=0.45cm]pre.north) -- (pre.north);
+
+  \node[box, below=0.8cm of pre, xshift=-4.5cm] (mov) {Movement score\\against empty-room\\baseline};
+  \node[box, right=0.45cm of mov] (br) {Breathing band\\analysis for a\\still person};
+  \node[box, right=0.45cm of br] (loc) {Combination of\\the three links:\\zone, direction};
+  \node[box, right=0.45cm of loc] (ml) {Window features\\and lightweight\\classifier};
+  \foreach \n in {mov,br,loc,ml} \draw[arr] (pre.south) -- ++(0,-0.35) -| (\n.north);
+
+  \node[wide, below=0.8cm of $(br.south)!0.5!(loc.south)$] (out) {Output: empty / present, moving / still, approximate zone and direction, activity label (experimental)};
+  \foreach \n in {mov,br,loc,ml} \draw[arr] (\n.south) -- ++(0,-0.35) -| (out.north);
+\end{tikzpicture}
+\caption{Overview of the proposed sensing pipeline}
+\label{fig:overview}
+\end{figure}
+
+On the computer, the processing is done in four stages.
+\begin{enumerate}
+  \item \textbf{Pre-processing.} The real and imaginary values of each subcarrier are converted to amplitude. Subcarriers that carry no signal are removed, outliers are filtered, and the stream is cut into short overlapping windows. Phase is not used as a main feature, because the raw phase reported by a commodity receiver contains random offsets, and cancelling them needs a second synchronised antenna that cannot be assumed on ordinary devices.
+  \item \textbf{Presence and movement detection.} For each link, a movement score is computed from how strongly the amplitudes change inside a window. The score is compared with a threshold that is learned from a short recording of the empty room. This follows the basic observation, used since FIMD \cite{fimd}, that CSI is stable in a static room and bursts when something moves. For a person who is not walking, the system looks for a slow periodic component in the frequency range of human breathing, following the idea of DeMan \cite{deman}.
+  \item \textbf{Coarse location and direction.} Each link runs its own detector. The position of movement is estimated from which links are disturbed and how strongly, and the direction is estimated from how this estimate changes over a few seconds. The result is a zone in the room, not an exact coordinate, and it is presented as such.
+  \item \textbf{Learned recognition.} Features are extracted from every window, such as the energy of the change, its distribution over several speed bands and its distribution over groups of subcarriers. A lightweight classifier is trained on labelled recordings to separate a small set of activities and zones.
+\end{enumerate}
+
+Every learned model is evaluated by holding out complete recording sessions. Windows that are close in time overlap almost completely, so a random split of windows would place nearly identical samples in the training and the test set and would report accuracy that is too high. Holding out whole sessions avoids this.

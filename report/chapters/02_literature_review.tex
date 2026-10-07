@@ -1,0 +1,127 @@
+\chapter{Literature Review}
+This chapter reviews nineteen works on sensing people with commodity Wi-Fi. Section~\ref{sec:related} describes the existing systems, grouped by what they detect. Section~\ref{sec:comparison} compares them side by side. Section~\ref{sec:gap} discusses the limitations that remain, and Section~\ref{sec:contribution} states what this research proposes to add.
+
+\section{Existing Systems / Related Works}
+\label{sec:related}
+
+\subsection{Motion and Presence Detection}
+Xiao et al. \cite{fimd} proposed FIMD, one of the first motion detection systems built on CSI. The authors start from the weakness of RSS: it varies strongly by itself, so a slow movement is easily hidden and missed. Their key observation is that CSI stays stable over time in a static environment and shows burst patterns when motion takes place. FIMD extracts a feature from CSI that uses this temporal stability together with the diversity across subcarriers, and then treats motion detection as the search for outliers among normal feature values with the density-based clustering algorithm DBSCAN. A false alert filter and data fusion are added to improve accuracy. The system was implemented with commercial IEEE 802.11n network cards and tested in two indoor scenarios, where the CSI feature gave better detection and better resistance to narrowband interference than RSS. The paper established the principle that most later work builds on, but it only answers whether something moves, and a person who stands still is not covered.
+
+Qian et al. \cite{pads} addressed a weakness of such detectors: they may fail when a person moves very slowly. Their system PADS extracts both the amplitude and the phase of CSI and shapes them into metrics that are sensitive to movement. It also uses the several antennas of a MIMO receiver, an aspect that the authors note had been studied much less than the diversity across subcarriers. The prototype on commercial Wi-Fi devices reports that human movement at various walking speeds is detected in about 97\% of cases on average. The limitation is that PADS relies on phase information and on several antennas; the paper itself notes that using a ``bad'' antenna by mistake can cause many false alarms.
+
+Wu et al. \cite{deman} extended detection from moving people to stationary people with DeMan. Earlier approaches to stationary people needed a calibration of the channel profile in the empty environment for each scenario. DeMan uses the amplitude and phase of CSI to detect moving targets and, when there is no large movement, treats human breathing as the sign that a person is present. It searches the signal for the periodic pattern caused by the small motion of the chest. The authors report true positive rates of 94.82\% for moving and 93.33\% for stationary people and a true negative rate of 96.25\% for empty scenes, about 30\% better than previous approaches, with only a small number of earlier measurements needed to set the model parameters. The breathing pattern is fragile, however: the authors state that it can be destroyed by significant body motion or hidden by environmental noise.
+
+\subsection{Through-the-Wall Detection}
+Detecting people behind a wall is harder because the wall weakens the signal strongly. Zeng et al. \cite{thude} proposed T-HuDe for through-the-wall detection of an active person with commodity devices. The system first selects a suitable antenna, because the antennas perform differently, and applies a band-pass filter to remove noise. It then estimates the power spectrum over Doppler velocity with a Doppler-MUSIC method and uses statistics of this spectrum over time to decide whether a moving person is present. In two indoor environments, the true positive and true negative rates were above 93\% in most areas. The method is aimed at moving people and depends on choosing a good antenna.
+
+Li et al. \cite{wiborder} looked at the opposite side of the same effect in WiBorder. Because Wi-Fi passes through walls, a sensing system often reacts to people outside the area of interest, which causes false alarms in applications such as intrusion detection. WiBorder is presented by its authors as the first method to determine a precise sensing boundary. It multiplies the CSI of one receiving antenna with the conjugate of the CSI of a second antenna. This removes the random phase offset that changes from packet to packet and at the same time amplifies the attenuation caused by the wall. From the result the authors build a metric that separates movement inside the room from movement behind the wall. Two case studies are reported: an intrusion detection system with a 99.4\% detection rate and a 0.68\% false alarm rate, and an area detection system with 97.03\% accuracy. The whole approach rests on having two antennas that share one oscillator.
+
+Shen et al. \cite{alpd} used deep learning for through-the-wall presence detection in a system called ALPD. An attention mechanism selects the informative subcarriers automatically, and a bidirectional LSTM network captures how the CSI develops over time. An additional static feature improves detection when the person does not move. The data were collected with pairs of ordinary TP-Link routers, and the authors report average accuracy of up to about 96\%, with better behaviour than the benchmark methods when interference is present. They also show that using data from both directions of transmission makes training more stable. The price is the need for labelled training data and a model that is much heavier than a threshold.
+
+Gu et al. \cite{wifileaks} studied the same capability as an attack. In WiFiLeaks, an attacker outside a room uses a commodity smartphone to listen passively to the signals of the Wi-Fi devices inside, without controlling the transmitter and without special radio equipment. The difficulty is that these signals are not sent at a regular, high rate. The authors combine outlier handling and wavelet denoising to strengthen the low-frequency information related to human presence, and they use the correlation among subcarriers as the feature, because a stationary person increases this correlation. With nine different transmitters and one smartphone in four settings, WiFiLeaks reached 83.33\% accuracy for presence and 100\% for absence at 20 metres between the monitoring device and the transmitter in through-the-wall scenarios. The work is important for this research in two ways: it shows that stationary presence can be sensed with modest hardware, and it shows that such sensing has a privacy cost that must be discussed.
+
+\subsection{Activity Recognition}
+Wang et al. \cite{eeyes} presented E-eyes, an early and influential system for recognising activities at home with existing Wi-Fi access points and devices. E-eyes separates in-place activities, such as cooking or brushing teeth, from walking movements, and identifies them by comparing the measured CSI with stored signal profiles. The idea behind it is that many home activities happen at one or a few fixed places, so a small number of profiles per place is sufficient. Profiles can be built in a semi-supervised way and updated to follow day-to-day changes. In two apartments, the system reached an average true positive rate above 96\% with a false positive rate below 1\% using a single access point. As a profile-matching method, it depends on profiles that were recorded in the same home and must be kept up to date.
+
+Wang et al. \cite{carm} argued that such systems lacked a model that links changes in CSI to human activity in a quantitative way. Their system CARM rests on two models. The CSI-speed model relates the dynamics of the CSI values to the speed of human movement, and the CSI-activity model relates the movement speeds of different body parts to a specific activity. On the signal processing side, CARM removes noise with Principal Component Analysis (PCA), extracts features with the Discrete Wavelet Transform (DWT), and recognises activities with Hidden Markov Models. The authors report an average accuracy above 96\%. The journal version of the work \cite{carmjsac} adds further experiments and reports 96\% recognition accuracy together with robustness to environmental changes. CARM matters to the present research because it explains why detection works at all: the frequency of the change in CSI is tied to how fast the reflecting body part moves.
+
+\subsection{Fall Detection}
+Han et al. \cite{wifall} proposed WiFall, the first fall detector based on CSI and the baseline that later fall detectors are measured against. WiFall first finds abnormal sections in the CSI series with an anomaly detection algorithm and then separates falls from other activities with a one-class Support Vector Machine. Implemented on laptops with commercial 802.11n network cards, it reached 87\% detection precision with an 18\% false alarm rate on average. The false alarm rate shows the central difficulty of fall detection: activities such as sitting down quickly look similar to a fall.
+
+Zhang et al. \cite{antifall} addressed this in Anti-Fall. The authors identify the difference of the CSI phase between two antennas as the feature that reliably segments falls and fall-like activities, and then use both phase and amplitude to separate real falls from the fall-like ones. In two indoor scenarios, Anti-Fall achieved a 10\% higher detection rate and a 10\% lower false alarm rate than WiFall on average. The same group later presented RT-Fall \cite{rtfall}, which segments and detects falls automatically in real time. It again uses the phase difference over two antennas, which the authors find to be a more sensitive base signal than amplitude, and it exploits a sharp decline of the power profile in the time-frequency domain that is characteristic of a fall. In four indoor scenarios, RT-Fall outperformed WiFall with 14\% higher sensitivity and 10\% higher specificity on average.
+
+Palipana et al. \cite{falldefi} focused on the dependence on the environment. Their system FallDeFi analyses CSI in the time-frequency domain, uses a pre-screener to find fall-like events, and selects features that are resilient to changes in the environment. A pre-trained system reaches above 93\% average accuracy. When the environment changes, or when the system is trained in a different environment, the average accuracy is close to 80\%. The authors report that this is still clearly better than RT-Fall and CARM under the same conditions. The result is valuable because it states openly how much accuracy is lost outside the training environment.
+
+Nguyen and Nguyen \cite{adafall} tried to improve this generalisation with adversarial data augmentation on the FallDeFi dataset. Their conclusion is modest: deep learning systems improved slightly in unseen domains, but the improvement was not significant. This is a useful negative result. It shows that robustness to new environments is not solved by a training technique alone.
+
+\subsection{Vital Signs and Learning-Based Sensing}
+Liu et al. \cite{vitalsigns} showed that the very small movements caused by breathing and heartbeat can be tracked during sleep with one access point and a single Wi-Fi device. Their system works on CSI in both the time and the frequency domain, estimates the breathing rate of one person and of two people in the same bed, and was tested in a laboratory and two apartments over three months. The authors report accuracy comparable to, or better than, approaches with dedicated sensors. The setting is favourable, since a sleeping person lies still between the two devices at a short distance, but the work proves that breathing is visible in commodity CSI, which is the basis for detecting a stationary person.
+
+Yang et al. \cite{sensefi} built SenseFi, a library and benchmark for deep learning in Wi-Fi sensing. It compares multilayer perceptrons, convolutional networks, recurrent networks and their variants, transformers and combined CNN-RNN models on four datasets, two of them public and two collected by the authors, in terms of accuracy, model size, computational cost and transferability. One observation is directly relevant here: a shallow five-layer CNN gave good results on all datasets, while a deep ResNet-18 failed to generalise on one of them. A larger model is therefore not automatically better when the data are limited.
+
+The same group proposed AutoFi \cite{autofi} to reduce the need for labelled data. Learning-based models suffer strongly from environmental dependency, and collecting well segmented and balanced samples in every new environment is not practical. AutoFi learns from unlabelled CSI samples that are captured at random, using a geometric self-supervised learning algorithm, and then transfers this knowledge to tasks defined by the user, such as gait recognition, activity recognition and gesture recognition. It was implemented on a pair of Atheros access points.
+
+\subsection{Surveys}
+Wang et al. \cite{survey2019} surveyed more than one hundred CSI-based behaviour recognition applications from the preceding six years. The survey describes the general structure of such systems as a sequence of base signal selection, signal pre-processing and identification, and it classifies the applications into pattern-based, model-based and deep learning-based approaches. It also lists the hardware used by these applications, which is dominated by the Intel 5300 network card and several Atheros chipsets, and it closes with the open issues of the field. The survey confirms the picture that emerges from the individual papers reviewed above.
+
+\section{Comparative Analysis}
+\label{sec:comparison}
+Table~\ref{tab:comparison} places the reviewed systems side by side. The results in the last column are the figures reported by the authors of each work. They were obtained with different hardware, rooms, participants and metrics, so they show what each system claims and cannot be ranked against each other directly.
+
+{\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{2.25cm}L{2.2cm}L{2.5cm}L{3.3cm}L{3.5cm}}
+\caption{Comparison of the reviewed Wi-Fi sensing systems}\label{tab:comparison}\\
+\toprule
+\textbf{Work} & \textbf{Task} & \textbf{Hardware} & \textbf{Main technique} & \textbf{Reported result}\\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\small Table \thetable\ (continued)}\\
+\toprule
+\textbf{Work} & \textbf{Task} & \textbf{Hardware} & \textbf{Main technique} & \textbf{Reported result}\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+FIMD \cite{fimd}, 2012 & Motion detection & Intel 5300 NIC & CSI stability feature, DBSCAN outlier detection & Better detection and interference resistance than RSS\\\addlinespace
+PADS \cite{pads}, 2014 & Motion detection at varying speed & Intel 5300 NIC, several antennas & Amplitude and phase metrics, antenna diversity & About 97\% of movements detected\\\addlinespace
+DeMan \cite{deman}, 2015 & Moving and stationary presence & Intel 5300 NIC & Amplitude and phase for motion, breathing pattern for still person & 94.82\% (moving), 93.33\% (still), 96.25\% (empty)\\\addlinespace
+T-HuDe \cite{thude}, 2019 & Through-wall detection of active person & Intel 5300 NIC & Antenna selection, Doppler-MUSIC spectrum statistics & Above 93\% true positive and true negative in most areas\\\addlinespace
+WiBorder \cite{wiborder}, 2020 & Sensing boundary, intrusion & Intel 5300 NIC, two RX antennas & Conjugate multiplication between antennas & 99.4\% detection, 0.68\% false alarm\\\addlinespace
+ALPD \cite{alpd}, 2023 & Through-wall presence & TP-Link routers & Attention over subcarriers, bidirectional LSTM & Up to about 96\% accuracy\\\addlinespace
+WiFiLeaks \cite{wifileaks}, 2024 & Through-wall stationary presence (attack) & Commodity smartphone, passive & Wavelet denoising, subcarrier correlation & 83.33\% presence, 100\% absence at 20 m\\\addlinespace
+E-eyes \cite{eeyes}, 2014 & Activity identification & Intel 5300 NIC, one AP & Matching against CSI profiles & Over 96\% true positive, under 1\% false positive\\\addlinespace
+CARM \cite{carm,carmjsac}, 2015/2017 & Activity recognition & Intel 5300 NIC & CSI-speed and CSI-activity models, PCA, DWT, HMM & About 96\% accuracy\\\addlinespace
+WiFall \cite{wifall}, 2014 & Fall detection & Intel 5300 NIC & Anomaly detection, one-class SVM & 87\% precision, 18\% false alarm\\\addlinespace
+Anti-Fall \cite{antifall}, 2015 & Fall detection & Intel 5300 NIC, two antennas & Phase difference for segmentation, phase and amplitude features & 10\% higher detection, 10\% lower false alarm than WiFall\\\addlinespace
+RT-Fall \cite{rtfall}, 2017 & Real-time fall detection & Intel 5300 NIC, two antennas & Phase difference, power decline pattern & 14\% higher sensitivity, 10\% higher specificity than WiFall\\\addlinespace
+FallDeFi \cite{falldefi}, 2018 & Fall detection across environments & Intel 5300 NIC & Time-frequency features, feature selection & Above 93\% pre-trained, close to 80\% in changed environment\\\addlinespace
+Nguyen and Nguyen \cite{adafall}, 2020 & Fall detection in unseen environments & FallDeFi dataset & Adversarial data augmentation & Slight, not significant improvement\\\addlinespace
+Liu et al. \cite{vitalsigns}, 2015 & Breathing and heart rate in sleep & Laptop NIC and one AP & Time and frequency analysis of CSI & Comparable to dedicated sensors\\\addlinespace
+AutoFi \cite{autofi}, 2022 & Gait, activity, gesture with few labels & Atheros APs, public datasets & Geometric self-supervised learning & Cross-task transfer from unlabelled data\\\addlinespace
+SenseFi \cite{sensefi}, 2023 & Benchmark of deep models & Four datasets & MLP, CNN, RNN variants, transformer & Shallow CNN good on all datasets\\
+\end{longtable}
+}
+
+Several patterns can be read from the comparison.
+
+\textbf{From hand-made features to learned models.} The early systems rely on signal processing and simple decision rules: an outlier test in FIMD, statistical metrics in PADS, a breathing model in DeMan and profile matching in E-eyes. The middle period adds classical machine learning, such as the one-class SVM in WiFall and the Hidden Markov Models in CARM. The recent systems, ALPD, AutoFi and the models benchmarked in SenseFi, learn the features themselves. The learned systems report high accuracy, but they need labelled data, and the works that test them outside their training environment report clear losses \cite{falldefi,adafall}.
+
+\textbf{From amplitude to phase and several antennas.} FIMD and WiFall work mainly with amplitude. Later systems obtain their gains from phase: PADS and DeMan add phase information, Anti-Fall and RT-Fall build on the phase difference between two antennas, and WiBorder multiplies the CSI of two antennas. The improvement from WiFall to RT-Fall comes to a large part from this change of the base signal.
+
+\textbf{The same few hardware platforms.} Thirteen of the seventeen entries in Table~\ref{tab:comparison} used the Intel 5300 network card or data recorded with it, and two of the four SenseFi datasets were recorded with it as well. The remaining works used routers or a smartphone.
+
+\textbf{Moving people are detected much more reliably than still people.} Only DeMan, WiFiLeaks, ALPD and the vital sign system of Liu et al. deal with a person who does not move, and each of them needs special care for this case: a breathing model, a correlation feature or an additional static feature.
+
+\textbf{One task per system.} Each system solves one task. A direct comparison across tasks, on the same hardware and the same data, is only available for deep learning models through SenseFi, and only for activity and gesture recognition.
+
+\section{Research Gap / Existing Limitations}
+\label{sec:gap}
+The review shows that sensing people with Wi-Fi is well established, but it also shows limitations that the present research can address.
+
+\textbf{Dependence on multi-antenna hardware.} The techniques behind the best results need at least two receiving antennas on a shared oscillator \cite{antifall,rtfall,wiborder}, a choice among several antennas \cite{thude} or the full antenna array of a MIMO receiver \cite{pads}. Most of them were built on one specific network card, the Intel 5300. It is therefore unclear how much of the reported performance can be reached with ordinary commodity Wi-Fi devices, on which the cleaned phase signal that these methods use cannot be assumed to be available.
+
+\textbf{Dependence on the environment.} Profile-based and learning-based systems are tied to the room in which they were set up. E-eyes must update its profiles to follow daily changes \cite{eeyes}. FallDeFi loses more than ten percentage points when the environment changes \cite{falldefi}, adversarial augmentation helps only slightly \cite{adafall}, and AutoFi was motivated by exactly this problem \cite{autofi}. Many of the high accuracies in Table~\ref{tab:comparison} were measured in the environment of training, and only a few works report what happens outside it.
+
+\textbf{Stationary people.} A still person is detected through breathing \cite{deman,vitalsigns} or through subtle changes in subcarrier correlation \cite{wifileaks}. These signals are small, are easily covered by noise or by the movement of other people, and were demonstrated in favourable conditions such as a sleeping person between two devices. Reliable detection of a still person with ordinary hardware remains open.
+
+\textbf{No precise location from one link.} A single link can tell that something moves, but not where. Without a boundary method such as WiBorder, which again needs two antennas, a detector also reacts to movement outside the area of interest \cite{wiborder}. How far several cheap links can replace this is not answered by the reviewed works.
+
+\textbf{Separate systems for separate tasks.} Presence, location, activity and breathing are treated by different systems with different hardware and evaluation methods. For someone who wants to build one installation, the literature does not say what a single low-cost set-up can achieve across these tasks.
+
+\textbf{Privacy.} WiFiLeaks shows that presence can be inferred from outside a room without the knowledge of the people inside \cite{wifileaks}. Most sensing papers treat Wi-Fi sensing as privacy friendly because it does not record images, and they do not discuss this risk.
+
+\section{Proposed Contribution}
+\label{sec:contribution}
+In response to these gaps, this research proposes the following contributions.
+
+\begin{enumerate}
+  \item \textbf{A sensing platform built only from commodity Wi-Fi devices.} The system uses four commodity Wi-Fi devices, one transmitter and three receivers, and needs no special radio equipment. The device settings, the data format and the recording tools will be documented so that the set-up can be repeated by others with the same widely available parts.
+  \item \textbf{An amplitude-based detection pipeline suited to this hardware.} Because the phase-difference techniques of the literature cannot be relied on with ordinary devices, the pipeline is built on the amplitude of the subcarriers and compensates with several links. It detects presence and movement against a short empty-room baseline, in the spirit of FIMD \cite{fimd}, and looks for breathing to detect a still person, in the spirit of DeMan \cite{deman}.
+  \item \textbf{Coarse location and direction from several links.} The three links are combined to estimate the zone in which movement happens and the direction in which it proceeds. The output is described as approximate, and its error will be measured against marked positions in the room.
+  \item \textbf{An evaluation that does not overstate the result.} All learned models are tested on complete recording sessions that were not used for training, and the experiments are repeated after changing the layout of the room and the placement of the devices. The research will report where the system fails, for example for a still person or for movement outside the links, in the same detail as where it succeeds.
+  \item \textbf{A comparison of simple and learned methods on the same data.} Threshold-based detection, a lightweight classifier and, if the amount of data allows it, a small neural network of the kind recommended by SenseFi \cite{sensefi} will be compared on identical recordings. This shows whether the added complexity is justified on this hardware.
+  \item \textbf{An account of the privacy implications.} The research will discuss what the measured capability means for the privacy of people near ordinary Wi-Fi devices, with reference to WiFiLeaks \cite{wifileaks}, and all recordings of people will be made only with their consent.
+\end{enumerate}
+
+The expected outcome is a clear, measured answer to the question of how far presence, movement and coarse location can be sensed with resources that are cheap and widely available, together with an open description of the limits.

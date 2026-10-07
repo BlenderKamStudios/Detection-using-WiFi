@@ -1,0 +1,197 @@
+% Pre Thesis 1 (P1) report
+% Structure follows "P1 Content": Chapter 1 and Chapter 2 (graded), the optional
+% Chapter 3 (Preliminary Design and Planning) and the Conclusion as Chapter 4.
+% Compiles with pdfLaTeX, XeLaTeX or Tectonic. On Overleaf: upload this whole folder
+% (WiFi.tex, frontmatter/, chapters/, signatures/) and press Recompile.
+%
+% File layout
+%   WiFi.tex                         preamble, names to fill in, order of the parts
+%   frontmatter/titlepage.tex        title page
+%   frontmatter/declaration.tex      declaration and student signatures
+%   frontmatter/approval.tex         examining committee
+%   frontmatter/abstract.tex         abstract and keywords
+%   frontmatter/nomenclature.tex     abbreviations
+%   chapters/01_introduction.tex     1.1 to 1.5
+%   chapters/02_literature_review.tex  2.1 to 2.4
+%   chapters/03_preliminary_design.tex 3.1 to 3.8
+%   chapters/04_conclusion.tex       conclusion
+%   (bibliography)                   at the end of this file
+
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,left=1.25in,right=1in,top=1in,bottom=1in]{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,calc,shapes.geometric}
+\usepackage[hidelinks]{hyperref}
+
+% ---------------------------------------------------------------------------
+% FILL THESE IN. Everything in [square brackets] below is a placeholder.
+% ---------------------------------------------------------------------------
+\newcommand{\thesistitle}{Device-Free Human Presence and Movement Detection Using Channel State Information from Commodity Wi-Fi Devices}
+\newcommand{\studentA}{Kamrul Islam Kamran}
+\newcommand{\idA}{24341149}
+\newcommand{\studentB}{Adiyan Abdur Rahman}
+\newcommand{\idB}{22241103}
+\newcommand{\studentC}{Ahnaf Awsaf}
+\newcommand{\idC}{22201408}
+% Signature images, cropped copies of the PNGs in the project folder.
+% Keep each one on the same letter as the student it belongs to.
+\newcommand{\sigA}{signatures/kamran}
+\newcommand{\sigB}{signatures/adiyan}
+\newcommand{\sigC}{signatures/awsaf}
+\newcommand{\supervisor}{Sheikh Araf Noshin}
+\newcommand{\supervisortitle}{[Designation]}
+\newcommand{\sigSupervisor}{signatures/araf_noshin}
+\newcommand{\coordinator}{Md. Golam Rabiul Alam}
+\newcommand{\coordinatortitle}{Professor}
+\newcommand{\head}{Sadia Hamid Kazi}
+\newcommand{\headtitle}{Chairperson and Associate Professor}
+\newcommand{\department}{Department of Computer Science and Engineering}
+\newcommand{\university}{Brac University}
+\newcommand{\degree}{B.Sc. in Computer Science and Engineering}
+\newcommand{\semester}{[Semester, Year]}
+\newcommand{\submissionmonth}{October 2026}
+\newcommand{\submissionyear}{2026}
+% ---------------------------------------------------------------------------
+
+% \signatureblock{name}{id}{signature image}
+\newcommand{\signatureblock}[3]{%
+  \begin{minipage}[t]{0.45\textwidth}\centering
+    % The image is used only if the file is there; without it the line stays blank.
+    \IfFileExists{#3.png}{%
+      \vspace{0.5cm}
+      \includegraphics[height=1.1cm,width=0.8\linewidth,keepaspectratio]{#3}\\[-2pt]}{\vspace{1.6cm}}
+    \rule{0.85\linewidth}{0.4pt}\\[4pt]
+    #1\\[2pt]
+    #2
+  \end{minipage}}
+
+% \committee[signature image]{role}{member or chair}{name}{designation}
+\newcommand{\committee}[5][]{%
+  \noindent\textbf{#2}\\
+  (#3)\par
+  \IfFileExists{#1.png}{\vspace{-0.1cm}}{\vspace{1.1cm}}
+  \begin{flushright}
+  \begin{minipage}{0.62\textwidth}\centering
+    \IfFileExists{#1.png}{%
+      \includegraphics[height=1.2cm,width=0.7\linewidth,keepaspectratio]{#1}\\[-4pt]}{}
+    \rule{0.9\linewidth}{0.4pt}\\[4pt]
+    #4\\[4pt]
+    #5\\
+    \department\\
+    \university
+  \end{minipage}
+  \end{flushright}
+  \vspace{0.6cm}}
+
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setlength{\emergencystretch}{1em}
+
+% Stick figure for the use case diagram: \actor{name}{x,y}{label}
+% defines the coordinates (name-w) and (name-e) for the association lines.
+\newcommand{\actor}[3]{%
+  \begin{scope}[shift={(#2)}]
+    \draw (0,0.55) circle (0.18);
+    \draw (0,0.37) -- (0,-0.15);
+    \draw (-0.3,0.2) -- (0.3,0.2);
+    \draw (0,-0.15) -- (-0.25,-0.6);
+    \draw (0,-0.15) -- (0.25,-0.6);
+    \node[font=\footnotesize, align=center] at (0,-0.95) {#3};
+    \coordinate (#1-w) at (-0.45,0.1);
+    \coordinate (#1-e) at (0.45,0.1);
+  \end{scope}}
+
+\begin{document}
+
+% ============================ Front matter ==================================
+% No page anchor on the title page: it is an unnumbered page 1 and would clash
+% with page 1 of Chapter 1 in the PDF links.
+\hypersetup{pageanchor=false}
+\input{frontmatter/titlepage}
+\hypersetup{pageanchor=true}
+
+\pagenumbering{roman}
+\onehalfspacing
+
+\input{frontmatter/declaration}
+\input{frontmatter/approval}
+\input{frontmatter/abstract}
+
+% \addcontentsline comes first so that the entry points to the first page of each list
+\renewcommand{\contentsname}{Table of Contents}
+\clearpage
+\addcontentsline{toc}{chapter}{Table of Contents}
+\tableofcontents
+
+\clearpage
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+
+\clearpage
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+
+\input{frontmatter/nomenclature}
+
+\clearpage
+\pagenumbering{arabic}
+
+% ============================ Chapters ======================================
+\input{chapters/01_introduction}
+\input{chapters/02_literature_review}
+\input{chapters/03_preliminary_design}
+\input{chapters/04_conclusion}
+
+% ============================ Bibliography ==================================
+\begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{Bibliography}
+
+\bibitem{alpd} L.-H. Shen, A.-H. Hsiao, K.-I. Lu, and K.-T. Feng, ``Attention-enhanced deep learning for device-free through-the-wall presence detection using indoor WiFi systems,'' arXiv preprint arXiv:2304.13105, 2024.
+
+\bibitem{thude} W. Zeng, Z. Tian, Y. Jin, and X. Chen, ``T-HuDe: Through-the-wall human detection with WiFi devices,'' in \emph{Communications and Networking (ChinaCom 2019)}, LNICST, vol. 313. Springer, 2020, pp. 192--204.
+
+\bibitem{wiborder} S. Li, Z. Liu, Y. Zhang, Q. Lv, X. Niu, L. Wang, and D. Zhang, ``WiBorder: Precise Wi-Fi based boundary sensing via through-wall discrimination,'' \emph{Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies}, vol. 4, no. 3, article 89, 2020.
+
+\bibitem{wifileaks} Y. Gu, J. Chen, K. He, C. Wu, Z. Zhao, and R. Du, ``WiFiLeaks: Exposing stationary human presence through a wall with commodity mobile devices,'' \emph{IEEE Transactions on Mobile Computing}, vol. 23, no. 6, 2024.
+
+\bibitem{deman} C. Wu, Z. Yang, Z. Zhou, X. Liu, Y. Liu, and J. Cao, ``Non-invasive detection of moving and stationary human with WiFi,'' \emph{IEEE Journal on Selected Areas in Communications}, vol. 33, no. 11, pp. 2329--2342, 2015.
+
+\bibitem{pads} K. Qian, C. Wu, Z. Yang, Y. Liu, and Z. Zhou, ``PADS: Passive detection of moving targets with dynamic speed using PHY layer information,'' in \emph{Proc. 20th IEEE International Conference on Parallel and Distributed Systems (ICPADS)}, 2014.
+
+\bibitem{fimd} J. Xiao, K. Wu, Y. Yi, L. Wang, and L. M. Ni, ``FIMD: Fine-grained device-free motion detection,'' in \emph{Proc. 18th IEEE International Conference on Parallel and Distributed Systems (ICPADS)}, 2012, pp. 229--235.
+
+\bibitem{eeyes} Y. Wang, J. Liu, Y. Chen, M. Gruteser, J. Yang, and H. Liu, ``E-eyes: Device-free location-oriented activity identification using fine-grained WiFi signatures,'' in \emph{Proc. 20th Annual International Conference on Mobile Computing and Networking (MobiCom)}, 2014, pp. 617--628.
+
+\bibitem{carm} W. Wang, A. X. Liu, M. Shahzad, K. Ling, and S. Lu, ``Understanding and modeling of WiFi signal based human activity recognition,'' in \emph{Proc. 21st Annual International Conference on Mobile Computing and Networking (MobiCom)}, 2015, pp. 65--76.
+
+\bibitem{carmjsac} W. Wang, A. X. Liu, M. Shahzad, K. Ling, and S. Lu, ``Device-free human activity recognition using commercial WiFi devices,'' \emph{IEEE Journal on Selected Areas in Communications}, vol. 35, no. 5, pp. 1118--1131, 2017.
+
+\bibitem{wifall} C. Han, K. Wu, Y. Wang, and L. M. Ni, ``WiFall: Device-free fall detection by wireless networks,'' in \emph{Proc. IEEE INFOCOM}, 2014, pp. 271--279.
+
+\bibitem{rtfall} H. Wang, D. Zhang, Y. Wang, J. Ma, Y. Wang, and S. Li, ``RT-Fall: A real-time and contactless fall detection system with commodity WiFi devices,'' \emph{IEEE Transactions on Mobile Computing}, vol. 16, no. 2, pp. 511--526, 2017.
+
+\bibitem{antifall} D. Zhang, H. Wang, Y. Wang, and J. Ma, ``Anti-Fall: A non-intrusive and real-time fall detector leveraging CSI from commodity WiFi devices,'' in \emph{Inclusive Smart Cities and e-Health (ICOST 2015)}, LNCS, vol. 9102. Springer, 2015, pp. 181--193.
+
+\bibitem{falldefi} S. Palipana, D. Rojas, P. Agrawal, and D. Pesch, ``FallDeFi: Ubiquitous fall detection using commodity Wi-Fi devices,'' \emph{Proceedings of the ACM on Interactive, Mobile, Wearable and Ubiquitous Technologies}, vol. 1, no. 4, 2018.
+
+\bibitem{adafall} T.-D. H. Nguyen and H.-N. H. Nguyen, ``Towards a robust WiFi-based fall detection with adversarial data augmentation,'' arXiv preprint arXiv:2005.11932, 2020.
+
+\bibitem{vitalsigns} J. Liu, Y. Wang, Y. Chen, J. Yang, X. Chen, and J. Cheng, ``Tracking vital signs during sleep leveraging off-the-shelf WiFi,'' in \emph{Proc. 16th ACM International Symposium on Mobile Ad Hoc Networking and Computing (MobiHoc)}, 2015.
+
+\bibitem{autofi} J. Yang, X. Chen, H. Zou, D. Wang, and L. Xie, ``AutoFi: Towards automatic WiFi human sensing via geometric self-supervised learning,'' arXiv preprint arXiv:2205.01629, 2022.
+
+\bibitem{survey2019} Z. Wang, K. Jiang, Y. Hou, W. Dou, C. Zhang, Z. Huang, and Y. Guo, ``A survey on human behavior recognition using channel state information,'' \emph{IEEE Access}, vol. 7, pp. 155986--156024, 2019.
+
+\bibitem{sensefi} J. Yang, X. Chen, H. Zou, C. X. Lu, D. Wang, S. Sun, and L. Xie, ``SenseFi: A library and benchmark on deep-learning-empowered WiFi human sensing,'' \emph{Patterns}, vol. 4, no. 3, 2023.
+
+\end{thebibliography}
+
+\end{document}
